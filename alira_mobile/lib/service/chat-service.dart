@@ -2,7 +2,7 @@
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:alira_mobile/bloc/chat-event.dart';
+import 'package:alira_mobile/event/chat-event.dart';
 import 'package:alira_mobile/google/protobuf/empty.pb.dart';
 import 'package:alira_mobile/google/protobuf/wrappers.pb.dart';
 import 'package:alira_mobile/message/domain/chat.dart';
