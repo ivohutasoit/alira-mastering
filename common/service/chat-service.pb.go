@@ -4,12 +4,12 @@
 package service
 
 import (
-	domain "common/message/domain"
 	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
+	domain "github.com/ivohutasoit/alira/common/message/domain"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
