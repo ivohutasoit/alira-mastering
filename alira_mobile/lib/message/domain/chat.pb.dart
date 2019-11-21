@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class Chat extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('Chat', package: const $pb.PackageName('domain'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('Chat', package: const $pb.PackageName('domain'))
     ..aOS(1, 'message')
     ..hasRequiredFields = false
   ;
@@ -27,16 +27,15 @@ class Chat extends $pb.GeneratedMessage {
   Chat createEmptyInstance() => create();
   static $pb.PbList<Chat> createRepeated() => $pb.PbList<Chat>();
   @$core.pragma('dart2js:noInline')
-  static Chat getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Chat>(create);
+  static Chat getDefault() => _defaultInstance ??= create()..freeze();
   static Chat _defaultInstance;
+  static void $checkItem(Chat v) {
+    if (v is! Chat) $pb.checkItemFailed(v, _i.qualifiedMessageName);
+  }
 
-  @$pb.TagNumber(1)
-  $core.String get message => $_getSZ(0);
-  @$pb.TagNumber(1)
+  $core.String get message => $_getS(0, '');
   set message($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
   $core.bool hasMessage() => $_has(0);
-  @$pb.TagNumber(1)
   void clearMessage() => clearField(1);
 }
 

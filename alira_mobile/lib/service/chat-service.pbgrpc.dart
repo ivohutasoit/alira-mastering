@@ -10,9 +10,9 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'google/protobuf/wrappers.pb.dart' as $0;
-import 'google/protobuf/empty.pb.dart' as $1;
-import 'domain/chat.pb.dart' as $2;
+import '../google/protobuf/wrappers.pb.dart' as $0;
+import '../google/protobuf/empty.pb.dart' as $1;
+import '../message/domain/chat.pb.dart' as $2;
 export 'chat-service.pb.dart';
 
 class ChatServiceClient extends $grpc.Client {
