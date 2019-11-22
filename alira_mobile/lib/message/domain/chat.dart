@@ -1,38 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class Chat {
-  final String id;
+  static var _uuid = Uuid();
+  
+  String id;
 
-  final String message;
+  String message;
 
-  Chat({String id, @required String message}) : this.id=id ?? UniqueKey().toString(), this.message=message;
+  Chat(this.message, [this.id]) {
+    if (id == null) {
+      id = _uuid.v4().toString();
+    }
+  }
+
+  //Chat({String id, @required String message}) : this.id=id ?? UniqueKey().toString(), this.message=message;
 }
 
 /// Outgoing message statuses
-/// NEW - message just created and is not sent yet
+/// UNKNOWN - message is unknown status
 /// SENT - message is sent to the server successfully
-/// FAILED - error has happened while sending message
-enum MessageOutgoingStatus { NEW, SENT, FAILED }
+enum ChatOutgoingStatus { UNKNOWN, SENT }
 
 class ChatOutgoing extends Chat {
-  MessageOutgoingStatus status;
+  ChatOutgoingStatus status;
 
   ChatOutgoing({
     String id, 
     @required String message,
-    MessageOutgoingStatus status = MessageOutgoingStatus.NEW
-  }) : this.status = status, super(id: id, message: message);
-
-  ChatOutgoing.copy(ChatOutgoing source)
-    : this.status = source.status, super(id: source.id, message: source.message);
-}
-
-class ChatIncoming extends Chat {
-  ChatIncoming({
-    String id, 
-    @required String message
-  }) : super(id: id, message: message);
-
-  ChatIncoming.copy(ChatIncoming source)
-    : super(id: source.id, message: source.message);
+    ChatOutgoingStatus status = ChatOutgoingStatus.UNKNOWN
+  }) : this.status = status, super(id, message);
 }

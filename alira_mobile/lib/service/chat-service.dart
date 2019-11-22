@@ -1,15 +1,131 @@
 
-import 'dart:io';
-import 'dart:isolate';
-
-import 'package:alira_mobile/event/chat-event.dart';
 import 'package:alira_mobile/google/protobuf/empty.pb.dart';
 import 'package:alira_mobile/google/protobuf/wrappers.pb.dart';
 import 'package:alira_mobile/message/domain/chat.dart';
-import 'package:alira_mobile/service/chat-service.pbgrpc.dart' as service;
+import 'package:alira_mobile/service/chat-service.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 
+const server = '127.0.0.1';
+const port = 9000;
+
 class ChatService {
+
+  bool _shutdown = false;
+
+  ClientChannel _clientSend;
+
+  ClientChannel _clientReceive;
+
+  final void Function(ChatOutgoing chat) onSentSuccess;
+
+  final void Function(ChatOutgoing chat, String error) onSentFailed;
+
+  final void Function(Chat chat) onReceivedSuccess;
+
+  final void Function(String error) onReceivedFailed;
+
+  ChatService({
+    this.onSentSuccess,
+    this.onSentFailed,
+    this.onReceivedSuccess,
+    this.onReceivedFailed
+  });
+
+  void send(ChatOutgoing chat) {
+    if (_clientSend == null) {
+      _clientSend = ClientChannel(
+        server,
+        port: port,
+        options: ChannelOptions(
+          credentials: ChannelCredentials.insecure(),
+          idleTimeout: Duration(seconds: 10)
+        )
+      );
+    }
+    var request = StringValue.create();
+    request.value = chat.message;
+
+    ChatServiceClient(_clientSend).send(request).then((_) {
+      if (onSentSuccess != null) {
+        var sentChat = ChatOutgoing(
+          message: chat.message,
+          id: chat.id,
+          status: ChatOutgoingStatus.SENT
+        );
+        onSentSuccess(sentChat);
+      }
+    }).catchError((err) {
+      if(!_shutdown) {
+        _shutdownSend();
+
+        if(onSentFailed != null) {
+          onSentFailed(chat, err.toString());
+        }
+        Future.delayed(Duration(seconds: 30), () {
+          send(chat);
+        });
+      }
+    });
+  }
+
+  void startListening() {
+    if (_clientReceive == null) {
+      _clientReceive = ClientChannel(
+        server,
+        port: port,
+        options: ChannelOptions(
+          credentials: ChannelCredentials.insecure(),
+          idleTimeout: Duration(seconds: 10)
+        )
+      );
+      var stream = ChatServiceClient(
+        _clientReceive
+      ).subscribe(Empty.create());
+
+      stream.forEach((incomingChat) {
+        if(onReceivedSuccess != null) {
+          var chat = Chat(incomingChat.message);
+          onReceivedSuccess(chat);
+        }
+      }).then((_) {
+        throw Exception("stream from server has been created");
+      }).catchError((err) {
+        if(!_shutdown) {
+          _shutdownReceive();
+
+          if(onReceivedFailed != null) {
+            onReceivedFailed(err.toString());
+          }
+
+          Future.delayed(Duration(seconds: 30), () {
+            startListening();
+          });
+        }
+      });
+    }
+  }
+
+  Future<void> shutdown() async {
+    _shutdown = true;
+    _shutdownSend();
+    _shutdownReceive(); 
+  }
+
+  void _shutdownSend() {
+    if (_clientSend != null) {
+      _clientSend.shutdown();
+      _clientSend = null;
+    }
+  }
+
+  void _shutdownReceive() {
+    if (_clientReceive != null) {
+      _clientReceive.shutdown();
+      _clientReceive = null;
+    }
+  }
+  
+  /* 
   Isolate _isolateSending;
   SendPort _portSending;
   ReceivePort _portSendStatus;
@@ -145,4 +261,5 @@ class ChatService {
       sleep(Duration(seconds: 5));
     } while(true);
   }
+  */
 }
